@@ -39,6 +39,7 @@ fail_on_validation_errors: true
         "run_summary.json",
         "predictions_sample.csv",
         "data_validation_report.json",
+        "agribot_inference_bundle.zip",
     ]
     for name in expected:
         assert (tmp_path / "artifacts" / name).exists(), f"missing {name}"

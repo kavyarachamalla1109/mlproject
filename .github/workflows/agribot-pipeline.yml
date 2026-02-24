@@ -67,7 +67,8 @@ jobs:
           lines.extend([
               '',
               '## Local Run Command',
-              '- `python -m src.main --config configs/train_config.yaml`',
+              '- Train: `python -m src.main --config configs/train_config.yaml`',
+              '- Serve API/UI: `python main.py`',
           ])
 
           Path('summary.md').write_text('\n'.join(lines))

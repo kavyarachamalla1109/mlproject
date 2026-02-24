@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AgriBot Crop Predictor</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; max-width: 700px; }
+    form { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    input, button { padding: 0.5rem; }
+    button { grid-column: span 2; }
+    .result { margin-top: 1rem; font-weight: bold; }
+    .error { margin-top: 1rem; color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>AgriBot Crop Recommendation</h1>
+  <p>Enter soil and weather values to predict crop label.</p>
+
+  <form method="post" action="/">
+    <input name="N" type="number" step="any" placeholder="N" required />
+    <input name="P" type="number" step="any" placeholder="P" required />
+    <input name="K" type="number" step="any" placeholder="K" required />
+    <input name="temperature" type="number" step="any" placeholder="temperature" required />
+    <input name="humidity" type="number" step="any" placeholder="humidity" required />
+    <input name="ph" type="number" step="any" placeholder="ph" required />
+    <input name="rainfall" type="number" step="any" placeholder="rainfall" required />
+    <button type="submit">Predict</button>
+  </form>
+
+  {% if prediction %}
+    <div class="result">Predicted Crop: {{ prediction }}</div>
+  {% endif %}
+  {% if error %}
+    <div class="error">Error: {{ error }}</div>
+  {% endif %}
+</body>
+</html>

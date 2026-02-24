@@ -8,12 +8,13 @@ import sys
 from pathlib import Path
 
 from src.artifacts import save_model_artifacts
+from src.deploy import create_inference_bundle
 from src.config import load_config
 from src.evaluate import evaluate_model
 from src.preprocess import preprocess_data
 from src.train import train_baseline_model
 from src.tune import tune_model
-from src.utils import ensure_dir, get_environment_info, setup_logging, utc_timestamp
+from src.utils import ensure_dir, get_environment_info, save_json, setup_logging, utc_timestamp
 from src.validate import validate_data_and_config
 
 LOGGER = logging.getLogger(__name__)
@@ -78,9 +79,15 @@ def run_pipeline(config_path: str) -> int:
         preprocessor=None,
     )
 
+
+    bundle_zip_path = create_inference_bundle(str(output_dir))
+    run_summary["artifacts"].append(Path(bundle_zip_path).name)
+    save_json(run_summary, Path(output_dir) / "run_summary.json")
+
     LOGGER.info("Pipeline complete. Key metrics: %s", eval_payload["metrics"])
     LOGGER.info("Artifacts saved at %s", Path(config.output_dir).resolve())
     LOGGER.info("Saved files: %s", artifact_paths)
+    LOGGER.info("Inference bundle: %s", bundle_zip_path)
     return 0
 
 

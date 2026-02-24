@@ -1,6 +1,6 @@
 # agribot-mlops-mini
 
-A complete, beginner-friendly MLOps mini-project for crop recommendation classification using a tabular agriculture dataset and scikit-learn.
+A complete, beginner-friendly MLOps mini-project for crop recommendation classification using a tabular agriculture dataset, scikit-learn, and a lightweight FastAPI inference app.
 
 ## 1) Project overview
 
@@ -12,6 +12,7 @@ This repository demonstrates a practical, end-to-end ML workflow:
 - Tune hyperparameters (`GridSearchCV` or `RandomizedSearchCV`)
 - Evaluate model quality
 - Save production-friendly artifacts for inference
+- Package a downloadable inference ZIP bundle
 - Run all checks in one GitHub Actions workflow
 
 It is intentionally simple and local-first (CPU-only), while keeping clean modular design for future scaling.
@@ -24,6 +25,9 @@ Given soil and weather features (`N`, `P`, `K`, `temperature`, `humidity`, `ph`,
 
 ```text
 agribot-mlops-mini/
+  main.py                          # FastAPI app entrypoint (python main.py)
+  templates/
+    index.html                     # Simple HTML UI
   README.md
   requirements.txt
   .gitignore
@@ -40,7 +44,7 @@ agribot-mlops-mini/
     .gitkeep
   src/
     __init__.py
-    main.py
+    main.py                        # training orchestrator
     config.py
     validate.py
     preprocess.py
@@ -49,6 +53,7 @@ agribot-mlops-mini/
     evaluate.py
     predict.py
     artifacts.py
+    deploy.py
     utils.py
   tests/
     test_config.py
@@ -85,9 +90,35 @@ Equivalent Make target:
 make train
 ```
 
-## 6) How to run prediction using pickle file
+## 6) What you get after training
 
-After training, run:
+`artifacts/` will contain:
+
+- `agribot_model.pkl` (primary model artifact)
+- `data_validation_report.json`
+- `metrics.json`
+- `metrics.md`
+- `predictions_sample.csv`
+- `best_params.json`
+- `run_summary.json`
+- `agribot_inference_bundle.zip` (downloadable app bundle)
+
+## 7) Run local prediction API + HTML UI with simple command
+
+After training, start the app with:
+
+```bash
+python main.py
+```
+
+Then open:
+
+- Web UI: `http://127.0.0.1:8000/`
+- Swagger docs: `http://127.0.0.1:8000/docs`
+
+This app loads `artifacts/agribot_model.pkl` and returns crop predictions.
+
+## 8) Predict from CLI using pickle file
 
 ```bash
 python -m src.predict \
@@ -98,21 +129,20 @@ python -m src.predict \
 
 The output CSV contains original features plus a `prediction` column.
 
-## 7) Generated artifacts
+## 9) Download and run ZIP bundle
 
-Pipeline outputs are written to `artifacts/`:
+After CI pipeline run, download artifacts and extract `agribot_inference_bundle.zip`.
 
-- `agribot_model.pkl` (primary model artifact)
-- `data_validation_report.json`
-- `metrics.json`
-- `metrics.md`
-- `predictions_sample.csv`
-- `best_params.json`
-- `run_summary.json`
+Inside extracted folder:
 
-If preprocessing becomes separate in future, `preprocessor.pkl` can also be emitted.
+```bash
+python -m pip install -r requirements.txt
+python main.py
+```
 
-## 8) GitHub Actions workflow behavior
+The bundle includes model, HTML template, requirements, and quickstart instructions.
+
+## 10) GitHub Actions workflow behavior
 
 Workflow file: `.github/workflows/agribot-pipeline.yml`
 
@@ -129,7 +159,7 @@ Steps:
 3. Run `pytest`
 4. Run full pipeline (`python -m src.main`)
 5. Build GitHub Step Summary from generated artifacts
-6. Upload `artifacts/*`
+6. Upload `artifacts/*` (including zip bundle)
 
 Step summary includes:
 
@@ -141,7 +171,7 @@ Step summary includes:
 - Artifact names
 - Local run command
 
-## 9) Customize dataset/config
+## 11) Customize dataset/config
 
 Edit `configs/train_config.yaml` to change:
 
@@ -157,7 +187,7 @@ Dataset requirements:
 - Must include `N,P,K,temperature,humidity,ph,rainfall,label`
 - Target column should match `target_column`
 
-## 10) Future roadmap (toward a larger MLOps control tower)
+## 12) Future roadmap (toward a larger MLOps control tower)
 
 - Introduce dataset versioning and schema contracts
 - Add richer drift and quality checks
@@ -173,4 +203,5 @@ Dataset requirements:
 make test
 make train
 make clean
+python main.py
 ```
