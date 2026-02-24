@@ -1,0 +1,96 @@
+name: agribot-mlops-pipeline
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  train-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Run full pipeline
+        run: python -m src.main --config configs/train_config.yaml
+
+      - name: Build step summary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          run_summary = json.loads(Path('artifacts/run_summary.json').read_text())
+          metrics = json.loads(Path('artifacts/metrics.json').read_text())['metrics']
+          validation = json.loads(Path('artifacts/data_validation_report.json').read_text())
+
+          artifact_names = sorted([p.name for p in Path('artifacts').glob('*') if p.is_file()])
+
+          lines = [
+              '# AgriBot MLOps Pipeline Summary',
+              '',
+              '## Dataset',
+              f"- Path: `{run_summary.get('data_path')}`",
+              f"- Rows: `{validation.get('rows')}`",
+              f"- Columns: `{validation.get('columns')}`",
+              f"- Validation Passed: `{validation.get('validation_passed')}`",
+              '',
+              '## Model',
+              f"- Model Type: `{run_summary.get('model_type')}`",
+              f"- Tuning Enabled: `{run_summary.get('tuning', {}).get('tuning_enabled')}`",
+              f"- Best Params: `{run_summary.get('tuning', {}).get('best_params')}`",
+              '',
+              '## Metrics',
+              f"- Accuracy: `{metrics.get('accuracy'):.4f}`",
+              f"- Precision: `{metrics.get('precision'):.4f}`",
+              f"- Recall: `{metrics.get('recall'):.4f}`",
+              f"- F1: `{metrics.get('f1'):.4f}`",
+              '',
+              '## Artifacts',
+          ]
+          lines.extend([f"- `{name}`" for name in artifact_names])
+          lines.extend([
+              '',
+              '## Local Run Command (No Local Training Needed)',
+              '- Download artifact zip from this workflow run and extract',
+              '- Install: `python -m pip install -r requirements.txt`',
+              '- Serve API/UI: `python main.py`',
+          ])
+
+          Path('summary.md').write_text('\n'.join(lines))
+          PY
+          cat summary.md >> "$GITHUB_STEP_SUMMARY"
+
+
+      - name: Upload model pickle only
+        uses: actions/upload-artifact@v4
+        with:
+          name: agribot-model-pickle
+          path: artifacts/agribot_model.pkl
+
+      - name: Upload inference bundle zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: agribot-inference-bundle
+          path: artifacts/agribot_inference_bundle.zip
+
+      - name: Upload all artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: agribot-artifacts
+          path: artifacts/*
