@@ -28,7 +28,7 @@ def get_model() -> Any:
     if _model is None:
         if not MODEL_PATH.exists():
             raise FileNotFoundError(
-                f"Model not found at {MODEL_PATH}. Download CI artifact (agribot-model-pickle or inference bundle) and place it under artifacts/."
+                f"Model not found at {MODEL_PATH}. Download CI bundle artifact (agribot-inference-bundle), extract it, and keep artifacts/agribot_model.pkl present."
             )
         _model = joblib.load(MODEL_PATH)
     return _model

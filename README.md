@@ -82,24 +82,19 @@ make install
 
 Training is expected to run in **GitHub Actions**.
 If you are a consumer of the model, you do **not** need to train locally.
-Just download workflow artifacts (`agribot-model-pickle` or `agribot-inference-bundle`) and run predictions locally.
+Just download workflow artifact `agribot-inference-bundle` and run predictions locally.
 
 ## 6) What you get after training
 
-`artifacts/` will contain:
+Primary deliverable for consumers:
 
-- `agribot_model.pkl` (primary model artifact)
-- `data_validation_report.json`
-- `metrics.json`
-- `metrics.md`
-- `predictions_sample.csv`
-- `best_params.json`
-- `run_summary.json`
-- `agribot_inference_bundle.zip` (downloadable app bundle)
+- `agribot_inference_bundle.zip` (single downloadable bundle containing `agribot_model.pkl`, FastAPI `main.py`, HTML template, requirements, and quickstart)
+
+Internal CI outputs (for debugging/traceability) may also exist in pipeline workspace.
 
 ## 7) Run local prediction API + HTML UI with simple command
 
-After downloading the artifact and ensuring `artifacts/agribot_model.pkl` exists, start the app with:
+After downloading and extracting the bundle (which already contains the model), start the app with:
 
 ```bash
 python main.py
@@ -125,7 +120,7 @@ The output CSV contains original features plus a `prediction` column.
 
 ## 9) Download and run ZIP bundle (recommended)
 
-After CI pipeline run, download artifact `agribot-inference-bundle` and extract `agribot_inference_bundle.zip`.
+After CI pipeline run, download the single artifact `agribot-inference-bundle` and extract `agribot_inference_bundle.zip`.
 
 Inside extracted folder:
 
@@ -153,9 +148,7 @@ Steps:
 3. Run `pytest`
 4. Run full pipeline (`python -m src.main`)
 5. Build GitHub Step Summary from generated artifacts
-6. Upload `agribot-model-pickle` (`agribot_model.pkl`)
-7. Upload `agribot-inference-bundle` (`agribot_inference_bundle.zip`)
-8. Upload all `artifacts/*` for full debugging context
+6. Upload **one consumer artifact**: `agribot-inference-bundle` (`agribot_inference_bundle.zip`)
 
 Step summary includes:
 

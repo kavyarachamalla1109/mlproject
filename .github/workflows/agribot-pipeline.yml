@@ -67,7 +67,7 @@ jobs:
           lines.extend([
               '',
               '## Local Run Command (No Local Training Needed)',
-              '- Download artifact zip from this workflow run and extract',
+              '- Download artifact `agribot-inference-bundle` from this workflow run and extract',
               '- Install: `python -m pip install -r requirements.txt`',
               '- Serve API/UI: `python main.py`',
           ])
@@ -77,20 +77,8 @@ jobs:
           cat summary.md >> "$GITHUB_STEP_SUMMARY"
 
 
-      - name: Upload model pickle only
-        uses: actions/upload-artifact@v4
-        with:
-          name: agribot-model-pickle
-          path: artifacts/agribot_model.pkl
-
       - name: Upload inference bundle zip
         uses: actions/upload-artifact@v4
         with:
           name: agribot-inference-bundle
           path: artifacts/agribot_inference_bundle.zip
-
-      - name: Upload all artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: agribot-artifacts
-          path: artifacts/*
