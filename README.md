@@ -78,17 +78,11 @@ Or use Makefile:
 make install
 ```
 
-## 5) How to run training pipeline
+## 5) Training responsibility
 
-```bash
-python -m src.main --config configs/train_config.yaml
-```
-
-Equivalent Make target:
-
-```bash
-make train
-```
+Training is expected to run in **GitHub Actions**.
+If you are a consumer of the model, you do **not** need to train locally.
+Just download workflow artifacts (`agribot-model-pickle` or `agribot-inference-bundle`) and run predictions locally.
 
 ## 6) What you get after training
 
@@ -105,7 +99,7 @@ make train
 
 ## 7) Run local prediction API + HTML UI with simple command
 
-After training, start the app with:
+After downloading the artifact and ensuring `artifacts/agribot_model.pkl` exists, start the app with:
 
 ```bash
 python main.py
@@ -129,9 +123,9 @@ python -m src.predict \
 
 The output CSV contains original features plus a `prediction` column.
 
-## 9) Download and run ZIP bundle
+## 9) Download and run ZIP bundle (recommended)
 
-After CI pipeline run, download artifacts and extract `agribot_inference_bundle.zip`.
+After CI pipeline run, download artifact `agribot-inference-bundle` and extract `agribot_inference_bundle.zip`.
 
 Inside extracted folder:
 
@@ -142,7 +136,7 @@ python main.py
 
 The bundle includes model, HTML template, requirements, and quickstart instructions.
 
-## 10) GitHub Actions workflow behavior
+## 10) GitHub Actions workflow behavior (train in CI)
 
 Workflow file: `.github/workflows/agribot-pipeline.yml`
 
@@ -159,7 +153,9 @@ Steps:
 3. Run `pytest`
 4. Run full pipeline (`python -m src.main`)
 5. Build GitHub Step Summary from generated artifacts
-6. Upload `artifacts/*` (including zip bundle)
+6. Upload `agribot-model-pickle` (`agribot_model.pkl`)
+7. Upload `agribot-inference-bundle` (`agribot_inference_bundle.zip`)
+8. Upload all `artifacts/*` for full debugging context
 
 Step summary includes:
 
@@ -201,7 +197,8 @@ Dataset requirements:
 
 ```bash
 make test
-make train
 make clean
 python main.py
 ```
+
+> `make train` is still available for developers/maintainers, but end users should use CI-produced model artifacts.

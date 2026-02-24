@@ -27,7 +27,9 @@ def get_model() -> Any:
     global _model  # pylint: disable=global-statement
     if _model is None:
         if not MODEL_PATH.exists():
-            raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
+            raise FileNotFoundError(
+                f"Model not found at {MODEL_PATH}. Download CI artifact (agribot-model-pickle or inference bundle) and place it under artifacts/."
+            )
         _model = joblib.load(MODEL_PATH)
     return _model
 
